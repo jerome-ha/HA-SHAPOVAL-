@@ -1,35 +1,49 @@
 #include "functions.h"
 
+
+
 int main(){
 	write(STDOUT_FILENO, Message, strlen(Message));
-	write(STDOUT_FILENO, PROMPT, strlen(PROMPT));
-	write(STDOUT_FILENO, PROMPT1, strlen(PROMPT1));
-	char test[128];
-	
-	time_t rawtime ;
-	struct tm * timeinfo;
-	time(&rawtime);
-	timeinfo = localtime (&rawtime);
-	
-	while(1){
-		read(STDIN_FILENO,test,128);
-		if (strcmp(test,"fortune")==10){
-			write(STDOUT_FILENO, PROMPT, strlen(PROMPT));
-			write(STDOUT_FILENO, Message1 , strlen( Message1 ));
-			write(STDOUT_FILENO, PROMPT1, strlen(PROMPT1));
-		}
-		else if (strcmp(test,"date")==10){
-			write(STDOUT_FILENO, PROMPT, strlen(PROMPT));
-			write(STDOUT_FILENO, "[", strlen("["));
-			write(STDOUT_FILENO, asctime(timeinfo), strlen( asctime(timeinfo)));
-			write(STDOUT_FILENO, "] %", strlen("] %"));
-		}
-			
-		else if (strcmp(test,"exit")==10){
+	PROMPT1
+	char buf[SIZE];
+	char buf_exit[SIZE_exit];
+	int waiting=1;
+	int count;
+	while(waiting){
+		int pid, status;
+
+		int length=read(STDIN_FILENO, buf, SIZE);
+		char* chain=malloc(length*sizeof(char));
+		int i=0;
+		for (i=0; i<length-1;i++){
+			chain[i]=buf[i];
+			}
+		if (strncmp(chain,"exit",4)==0){
 			write(STDOUT_FILENO, "Bye bye...\n", strlen("Bye bye...\n"));
-			break;
+			exit(EXIT_SUCCESS);}
+		pid=fork();
+		
+		if (pid!=0){
+			struct timespec tp0, tp1;
+			clock_gettime(CLOCK_REALTIME, &tp0);
+			wait(&status);
+			clock_gettime(CLOCK_REALTIME, &tp1);
+			long duration = (tp1.tv_nsec - tp0.tv_nsec)/1000000;
+			if (WIFEXITED(status)) {
+				sprintf(buf_exit, "enseash [exit:%d|%d ms] %% ",  WEXITSTATUS(status),duration);
+				write(STDOUT_FILENO, buf_exit, strlen(buf_exit));
+			} else if  (WIFSIGNALED(status)) {
+				sprintf(buf_exit, "enseash [sign:%d|%d ms] %% ",  WTERMSIG(status),duration);
+				write(STDOUT_FILENO, buf_exit, strlen(buf_exit));
+			} else	{
+				PROMPT1 }
 		}
+		else {
+			execlp(chain,chain,(char*) NULL);
+			exit(EXIT_FAILURE);}
+		}
+	return 0;
 		
 	}
-	
-	return 0;}
+			
+		
