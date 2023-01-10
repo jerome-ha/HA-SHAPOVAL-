@@ -41,13 +41,17 @@ int main(){
 			clock_gettime(CLOCK_REALTIME, &tp1);
 			long duration = (tp1.tv_nsec - tp0.tv_nsec)/1000000;	//for Q5
 			if (WIFEXITED(status)) {	//for Q4 exit
-				sprintf(buf_exit, "enseash [exit:%d|%d ms] %% ",  WEXITSTATUS(status),duration);	//for Q4, Q5
+				sprintf(buf_exit, "enseash [exit:%d|%d ms] %% ",  WEXITSTATUS(status),duration);
+				//for Q4, Q5
 				write(STDOUT_FILENO, buf_exit, strlen(buf_exit));
-			} else if  (WIFSIGNALED(status)) {	//for Q4 signal
-				sprintf(buf_exit, "enseash [sign:%d|%d ms] %% ",  WTERMSIG(status),duration);		//for Q4, Q5
+			}
+			else if  (WIFSIGNALED(status)) {	//for Q4 signal
+				sprintf(buf_exit, "enseash [sign:%d|%d ms] %% ",  WTERMSIG(status),duration);
+				//for Q4, Q5
 				write(STDOUT_FILENO, buf_exit, strlen(buf_exit));
-			} else	{
-				PROMPT1 }
+			}
+			else	{
+				PROMPT1 } // just in case of an error it prints back "enseash %"
 		}
 		else {
 			execlp(chain,chain,(char*) NULL);
